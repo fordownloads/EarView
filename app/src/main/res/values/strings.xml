@@ -3,17 +3,15 @@
     <string name="app_name">EarView</string>
 
     <string name="no_connection_title">Earpick not connected</string>
-    <string name="no_connection_hint">Power on the camera and join its Wi-Fi, then tap Retry.</string>
+    <string name="no_connection_hint">Power on the camera, then tap Connect and pick its Wi-Fi network.</string>
+    <string name="connect">Connect</string>
     <string name="retry">Retry</string>
     <string name="searching">Searching…</string>
+    <string name="open_wifi_settings">Open Wi-Fi settings</string>
 
     <string name="fps_format">%1$d fps</string>
     <string name="fps_zero">0 fps</string>
-    <string name="battery_unknown">--</string>
-    <string name="percent_format">%1$d%%</string>
     <string name="model_unknown">—</string>
-
-    <string name="cd_battery">Device battery</string>
     <string name="cd_rotate">Rotate</string>
     <string name="cd_mirror">Mirror</string>
     <string name="cd_lamp">Lamp</string>

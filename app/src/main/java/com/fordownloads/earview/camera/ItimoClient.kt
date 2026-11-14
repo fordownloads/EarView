@@ -1,6 +1,7 @@
 package com.fordownloads.earview.camera
 
 import org.json.JSONObject
+import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -33,7 +34,6 @@ class ItimoClient(
         if (running) return
         running = true
         callback.onModel("iTiMO")
-        callback.onLampAvailability(true)
         videoThread = Thread({ videoLoop() }, "itimo-video").apply {
             isDaemon = true
             start()
@@ -134,6 +134,9 @@ class ItimoClient(
         }
         try {
             socket.soTimeout = 550
+            val lampAvailable = probeLamp(socket)
+            Log.i("EarView", "itimo lamp available=$lampAvailable")
+            callback.onLampAvailability(lampAvailable)
             var lastBattery = 0L
             var lastModel = 0L
             while (running) {
@@ -153,8 +156,14 @@ class ItimoClient(
         }
     }
 
-    private fun queryBattery(socket: DatagramSocket) {
-        val reply = sendCommand(socket, CMD_GET_BATTERY) ?: return
+    private fun probeLamp(socket: DatagramSocket): Boolean {
+        // Read-only capability check: firmware that has a lamp answers at least
+        // one of the brightness/PWM queries.
+        if (sendCommand(socket, CMD_GET_LEVEL, tries = 1, timeoutMs = 400) != null) return true
+        return sendCommand(socket, CMD_GET_PWM, tries = 1, timeoutMs = 400) != null
+    }
+
+    private fun queryBattery(socket: DatagramSocket) {        val reply = sendCommand(socket, CMD_GET_BATTERY) ?: return
         if (reply.size < 12) return
         val value = Protocol.u32(reply, 8)
         callback.onBattery(batteryPercent(value), ((value shr 16) and 1L) != 0L)
@@ -334,6 +343,8 @@ class ItimoClient(
         const val CMD_GET_BATTERY = 0x1017
         const val CMD_SET_LAMP = 0x1050
         const val CMD_GET_BOARD_INFO = 0x1060
+        const val CMD_GET_PWM = 0x1015
+        const val CMD_GET_LEVEL = 0x1055
 
         /** Return the local IPv4 that can reach the camera, or null. */
         fun probe(host: String = HOST, localIp: String? = null, timeoutMs: Int = 1000): String? {

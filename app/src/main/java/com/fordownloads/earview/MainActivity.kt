@@ -1,34 +1,44 @@
 package com.fordownloads.earview
 
 import android.app.Activity
+import android.content.Intent
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
+import android.view.Gravity
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.ImageButton
-import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import com.fordownloads.earview.camera.CameraManager
+import com.fordownloads.earview.ui.BatteryView
 import com.fordownloads.earview.ui.VideoView
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class MainActivity : Activity(), CameraManager.Listener {
 
     private lateinit var prefs: Prefs
     private lateinit var videoView: VideoView
-    private lateinit var batteryIcon: ImageView
-    private lateinit var batteryText: TextView
+    private lateinit var batteryView: BatteryView
     private lateinit var modelText: TextView
     private lateinit var fpsText: TextView
+    private lateinit var topBar: LinearLayout
+    private lateinit var videoArea: FrameLayout
+    private lateinit var bottomBar: LinearLayout
     private lateinit var rotateButton: ImageButton
     private lateinit var mirrorButton: ImageButton
     private lateinit var lampButton: ImageButton
     private lateinit var noDevice: View
     private lateinit var retryButton: TextView
+    private lateinit var connectButton: TextView
 
     private var manager: CameraManager? = null
     private var connected = false
@@ -37,6 +47,7 @@ class MainActivity : Activity(), CameraManager.Listener {
     private var mountOffset = 0
     private var model = ""
     private var frames = 0
+    private var wifiPanelOpened = false
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -73,15 +84,18 @@ class MainActivity : Activity(), CameraManager.Listener {
         prefs = Prefs(this)
 
         videoView = findViewById(R.id.video)
-        batteryIcon = findViewById(R.id.battery_icon)
-        batteryText = findViewById(R.id.battery_text)
+        batteryView = findViewById(R.id.battery_view)
         modelText = findViewById(R.id.model_text)
         fpsText = findViewById(R.id.fps_text)
+        topBar = findViewById(R.id.top_bar)
+        videoArea = findViewById(R.id.video_area)
+        bottomBar = findViewById(R.id.bottom_bar)
         rotateButton = findViewById(R.id.rotate_button)
         mirrorButton = findViewById(R.id.mirror_button)
         lampButton = findViewById(R.id.lamp_button)
         noDevice = findViewById(R.id.no_device)
         retryButton = findViewById(R.id.retry_button)
+        connectButton = findViewById(R.id.connect_button)
 
         videoView.listener = object : VideoView.Listener {
             override fun onMirrorToggle() {
@@ -101,10 +115,17 @@ class MainActivity : Activity(), CameraManager.Listener {
         mirrorButton.setOnClickListener { toggleMirror() }
         lampButton.setOnClickListener { manager?.toggleLamp() }
         retryButton.setOnClickListener { retry() }
+        connectButton.setOnClickListener { openWifiPanel() }
 
         updateMirrorButton()
         updateBattery(-1)
         updateConnected(false)
+        applyOrientation(resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyOrientation(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
     }
 
     override fun onStart() {
@@ -117,6 +138,17 @@ class MainActivity : Activity(), CameraManager.Listener {
     override fun onResume() {
         super.onResume()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (wifiPanelOpened) {
+            wifiPanelOpened = false
+            if (!connected) {
+                searching = true
+                retryButton.isEnabled = false
+                retryButton.text = getString(R.string.searching)
+                manager?.retry()
+                handler.removeCallbacks(retryReset)
+                handler.postDelayed(retryReset, 5000)
+            }
+        }
     }
 
     override fun onPause() {
@@ -148,7 +180,7 @@ class MainActivity : Activity(), CameraManager.Listener {
     }
 
     override fun onBattery(percent: Int, charging: Boolean) {
-        updateBattery(percent)
+        updateBattery(percent, charging)
     }
 
     override fun onModel(model: String) {
@@ -216,21 +248,8 @@ class MainActivity : Activity(), CameraManager.Listener {
         }
     }
 
-    private fun updateBattery(percent: Int) {
-        if (percent < 0) {
-            batteryText.text = getString(R.string.battery_unknown)
-            batteryText.setTextColor(getColor(R.color.text_secondary))
-            batteryIcon.imageTintList = ColorStateList.valueOf(getColor(R.color.battery_unknown))
-            return
-        }
-        val color = when {
-            percent >= 50 -> R.color.battery_ok
-            percent >= 20 -> R.color.battery_low
-            else -> R.color.battery_critical
-        }
-        batteryText.text = getString(R.string.percent_format, percent)
-        batteryText.setTextColor(getColor(color))
-        batteryIcon.imageTintList = ColorStateList.valueOf(getColor(color))
+    private fun updateBattery(percent: Int, charging: Boolean = false) {
+        batteryView.setValue(percent, charging)
     }
 
     private fun updateMirrorButton() {
@@ -239,9 +258,112 @@ class MainActivity : Activity(), CameraManager.Listener {
         )
     }
 
+    /**
+     * Portrait: bars above and below the video.
+     * Landscape: info rail on the left, buttons rail on the right.
+     */
+    private fun applyOrientation(landscape: Boolean) {
+        val root = findViewById<LinearLayout>(R.id.root)
+        if (landscape) {
+            root.orientation = LinearLayout.HORIZONTAL
+
+            topBar.orientation = LinearLayout.VERTICAL
+            topBar.gravity = Gravity.TOP
+            topBar.setPadding(dp(16), dp(12), dp(16), dp(12))
+            topBar.layoutParams = LinearLayout.LayoutParams(
+                dp(200), LinearLayout.LayoutParams.MATCH_PARENT
+            )
+
+            modelText.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(10) }
+
+            fpsText.gravity = Gravity.START
+            fpsText.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(2) }
+
+            videoArea.layoutParams = LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.MATCH_PARENT, 1f
+            )
+
+            bottomBar.orientation = LinearLayout.VERTICAL
+            bottomBar.gravity = Gravity.CENTER
+            bottomBar.layoutParams = LinearLayout.LayoutParams(
+                dp(72), LinearLayout.LayoutParams.MATCH_PARENT
+            )
+            bottomBar.setPadding(0, 0, 0, 0)
+
+            rotateButton.layoutParams = railButtonParams(marginBottom = true)
+            mirrorButton.layoutParams = railButtonParams(marginBottom = true)
+            lampButton.layoutParams = railButtonParams(marginBottom = false)
+        } else {
+            root.orientation = LinearLayout.VERTICAL
+
+            topBar.orientation = LinearLayout.HORIZONTAL
+            topBar.gravity = Gravity.CENTER_VERTICAL
+            topBar.setPadding(dp(16), 0, dp(16), 0)
+            topBar.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(48)
+            )
+
+            modelText.layoutParams = LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+            ).apply { marginStart = dp(16) }
+
+            fpsText.gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            fpsText.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            )
+
+            videoArea.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+            )
+
+            bottomBar.orientation = LinearLayout.HORIZONTAL
+            bottomBar.gravity = Gravity.CENTER
+            bottomBar.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(72)
+            )
+            bottomBar.setPadding(0, 0, 0, 0)
+
+            rotateButton.layoutParams = barButtonParams(marginEnd = true)
+            mirrorButton.layoutParams = barButtonParams(marginEnd = true)
+            lampButton.layoutParams = barButtonParams(marginEnd = false)
+        }
+    }
+
+    private fun barButtonParams(marginEnd: Boolean): LinearLayout.LayoutParams =
+        LinearLayout.LayoutParams(dp(48), dp(48)).apply {
+            if (marginEnd) this.marginEnd = dp(16)
+        }
+
+    private fun railButtonParams(marginBottom: Boolean): LinearLayout.LayoutParams =
+        LinearLayout.LayoutParams(dp(48), dp(48)).apply {
+            if (marginBottom) bottomMargin = dp(16)
+        }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).roundToInt()
+
     // ------------------------------------------------------------------
     // actions
     // ------------------------------------------------------------------
+
+    /** Opens Android's Wi-Fi panel; the user selects the earpick network. */
+    private fun openWifiPanel() {
+        wifiPanelOpened = true
+        try {
+            startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+        } catch (_: Exception) {
+            try {
+                startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
+            } catch (_: Exception) {
+            }
+        }
+    }
 
     private fun retry() {
         searching = true
