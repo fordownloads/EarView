@@ -1,56 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
-    android:orientation="vertical">
-
-    <!-- Top bar: battery, model, fps -->
-    <LinearLayout
-        android:id="@+id/top_bar"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@color/black"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp">
-
-        <com.fordownloads.earview.ui.BatteryView
-            android:id="@+id/battery_view"
-            android:layout_width="80dp"
-            android:layout_height="28dp" />
-
-        <TextView
-            android:id="@+id/model_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/model_unknown"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/fps_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="52dp"
-            android:gravity="end"
-            android:text="@string/fps_zero"
-            android:textColor="@color/text_primary"
-            android:textSize="13sp" />
-    </LinearLayout>
+    android:background="@color/black">
 
     <!-- Video area -->
     <FrameLayout
         android:id="@+id/video_area"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
         android:background="@color/black">
 
         <com.fordownloads.earview.ui.VideoView
@@ -97,7 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/connect_button"
@@ -108,18 +67,20 @@
                     android:minWidth="140dp"
                     android:paddingStart="28dp"
                     android:paddingEnd="28dp"
+                    android:layout_marginBottom="16dp"
                     android:text="@string/connect"
                     android:textColor="@color/black"
                     android:textSize="15sp"
+                    android:layout_gravity="center"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/retry_button"
                     android:layout_width="wrap_content"
                     android:layout_height="42dp"
-                    android:layout_marginStart="12dp"
                     android:background="@drawable/bg_pill_outline"
                     android:gravity="center"
+                    android:layout_gravity="center"
                     android:minWidth="120dp"
                     android:paddingStart="26dp"
                     android:paddingEnd="26dp"
@@ -130,45 +91,94 @@
         </LinearLayout>
     </FrameLayout>
 
+    <!-- Top bar: battery, model, fps -->
+    <LinearLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_gravity="top"
+        android:background="@color/black"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <com.fordownloads.earview.ui.BatteryView
+            android:id="@+id/battery_view"
+            android:layout_width="80dp"
+            android:layout_height="28dp" />
+
+        <TextView
+            android:id="@+id/model_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/model_unknown"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/fps_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:minWidth="52dp"
+            android:text="@string/fps_zero"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+    </LinearLayout>
+
     <!-- Bottom bar: rotate, mirror, lamp -->
     <LinearLayout
         android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="72dp"
+        android:layout_gravity="bottom"
         android:background="@color/black"
         android:gravity="center"
         android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/rotate_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="16dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/cd_rotate"
-            android:padding="12dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_rotate" />
+        <LinearLayout
+            android:id="@+id/button_panel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/mirror_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginEnd="16dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/cd_mirror"
-            android:padding="12dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_flip" />
+            <ImageButton
+                android:id="@+id/rotate_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_rotate"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_rotate" />
 
-        <ImageButton
-            android:id="@+id/lamp_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/cd_lamp"
-            android:padding="12dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_lamp_off" />
+            <ImageButton
+                android:id="@+id/mirror_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_mirror"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_flip" />
+
+            <ImageButton
+                android:id="@+id/lamp_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_lamp"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_lamp_off" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

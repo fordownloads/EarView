@@ -71,7 +71,7 @@ class BatteryView @JvmOverloads constructor(
             else -> unknownColor
         }
 
-        shellPaint.color = if (known) Color.WHITE else Color.argb(150, 255, 255, 255)
+        shellPaint.color = if (known) levelColor else unknownColor
         canvas.drawRoundRect(body, dp(2.2f), dp(2.2f), shellPaint)
         canvas.drawRoundRect(cap, dp(0.8f), dp(0.8f), shellPaint)
 

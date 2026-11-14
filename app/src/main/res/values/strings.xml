@@ -2,9 +2,9 @@
 <resources>
     <string name="app_name">EarView</string>
 
-    <string name="no_connection_title">Earpick not connected</string>
-    <string name="no_connection_hint">Power on the camera, then tap Connect and pick its Wi-Fi network.</string>
-    <string name="connect">Connect</string>
+    <string name="no_connection_title">Device not connected</string>
+    <string name="no_connection_hint">Power on the camera, then tap "Select device" and pick its Wi-Fi network</string>
+    <string name="connect">Select device</string>
     <string name="retry">Retry</string>
     <string name="searching">Searching…</string>
     <string name="open_wifi_settings">Open Wi-Fi settings</string>

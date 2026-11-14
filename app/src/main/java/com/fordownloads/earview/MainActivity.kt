@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -33,6 +34,7 @@ class MainActivity : Activity(), CameraManager.Listener {
     private lateinit var topBar: LinearLayout
     private lateinit var videoArea: FrameLayout
     private lateinit var bottomBar: LinearLayout
+    private lateinit var buttonPanel: LinearLayout
     private lateinit var rotateButton: ImageButton
     private lateinit var mirrorButton: ImageButton
     private lateinit var lampButton: ImageButton
@@ -90,6 +92,7 @@ class MainActivity : Activity(), CameraManager.Listener {
         topBar = findViewById(R.id.top_bar)
         videoArea = findViewById(R.id.video_area)
         bottomBar = findViewById(R.id.bottom_bar)
+        buttonPanel = findViewById(R.id.button_panel)
         rotateButton = findViewById(R.id.rotate_button)
         mirrorButton = findViewById(R.id.mirror_button)
         lampButton = findViewById(R.id.lamp_button)
@@ -260,19 +263,25 @@ class MainActivity : Activity(), CameraManager.Listener {
 
     /**
      * Portrait: bars above and below the video.
-     * Landscape: info rail on the left, buttons rail on the right.
+     * Landscape: translucent info panel in the top-left and the buttons
+     * centered on the right, both floating over the full-screen video.
      */
     private fun applyOrientation(landscape: Boolean) {
-        val root = findViewById<LinearLayout>(R.id.root)
         if (landscape) {
-            root.orientation = LinearLayout.HORIZONTAL
+            videoArea.layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+            )
 
             topBar.orientation = LinearLayout.VERTICAL
             topBar.gravity = Gravity.TOP
-            topBar.setPadding(dp(16), dp(12), dp(16), dp(12))
-            topBar.layoutParams = LinearLayout.LayoutParams(
-                dp(200), LinearLayout.LayoutParams.MATCH_PARENT
-            )
+            topBar.setPadding(dp(12), dp(12), dp(12), dp(12))
+            topBar.setBackgroundResource(R.drawable.bg_overlay_panel)
+            topBar.layoutParams = FrameLayout.LayoutParams(
+                dp(150),
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP or Gravity.START,
+            ).apply { setMargins(dp(12), dp(12), 0, 0) }
 
             modelText.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -285,28 +294,39 @@ class MainActivity : Activity(), CameraManager.Listener {
                 LinearLayout.LayoutParams.WRAP_CONTENT,
             ).apply { topMargin = dp(2) }
 
-            videoArea.layoutParams = LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.MATCH_PARENT, 1f
-            )
-
-            bottomBar.orientation = LinearLayout.VERTICAL
-            bottomBar.gravity = Gravity.CENTER
-            bottomBar.layoutParams = LinearLayout.LayoutParams(
-                dp(72), LinearLayout.LayoutParams.MATCH_PARENT
-            )
+            bottomBar.setBackgroundColor(Color.TRANSPARENT)
             bottomBar.setPadding(0, 0, 0, 0)
+            bottomBar.gravity = Gravity.CENTER
+            bottomBar.layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.END or Gravity.CENTER_VERTICAL,
+            ).apply { setMargins(0, 0, dp(12), 0) }
+
+            buttonPanel.orientation = LinearLayout.VERTICAL
+            buttonPanel.setBackgroundResource(R.drawable.bg_overlay_panel)
+            buttonPanel.setPadding(dp(10), dp(12), dp(10), dp(12))
 
             rotateButton.layoutParams = railButtonParams(marginBottom = true)
             mirrorButton.layoutParams = railButtonParams(marginBottom = true)
             lampButton.layoutParams = railButtonParams(marginBottom = false)
         } else {
-            root.orientation = LinearLayout.VERTICAL
+            videoArea.layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+            ).apply {
+                topMargin = dp(48)
+                bottomMargin = dp(72)
+            }
 
             topBar.orientation = LinearLayout.HORIZONTAL
             topBar.gravity = Gravity.CENTER_VERTICAL
             topBar.setPadding(dp(16), 0, dp(16), 0)
-            topBar.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(48)
+            topBar.setBackgroundColor(Color.BLACK)
+            topBar.layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                dp(48),
+                Gravity.TOP,
             )
 
             modelText.layoutParams = LinearLayout.LayoutParams(
@@ -319,16 +339,18 @@ class MainActivity : Activity(), CameraManager.Listener {
                 LinearLayout.LayoutParams.WRAP_CONTENT,
             )
 
-            videoArea.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+            bottomBar.setBackgroundColor(Color.BLACK)
+            bottomBar.setPadding(0, 0, 0, 0)
+            bottomBar.gravity = Gravity.CENTER
+            bottomBar.layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                dp(72),
+                Gravity.BOTTOM,
             )
 
-            bottomBar.orientation = LinearLayout.HORIZONTAL
-            bottomBar.gravity = Gravity.CENTER
-            bottomBar.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(72)
-            )
-            bottomBar.setPadding(0, 0, 0, 0)
+            buttonPanel.orientation = LinearLayout.HORIZONTAL
+            buttonPanel.background = null
+            buttonPanel.setPadding(0, 0, 0, 0)
 
             rotateButton.layoutParams = barButtonParams(marginEnd = true)
             mirrorButton.layoutParams = barButtonParams(marginEnd = true)
