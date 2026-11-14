@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EarView</string>
+
+    <string name="no_connection_title">Earpick not connected</string>
+    <string name="no_connection_hint">Power on the camera and join its Wi-Fi, then tap Retry.</string>
+    <string name="retry">Retry</string>
+    <string name="searching">Searching…</string>
+
+    <string name="fps_format">%1$d fps</string>
+    <string name="fps_zero">0 fps</string>
+    <string name="battery_unknown">--</string>
+    <string name="percent_format">%1$d%%</string>
+    <string name="model_unknown">—</string>
+
+    <string name="cd_battery">Device battery</string>
+    <string name="cd_rotate">Rotate</string>
+    <string name="cd_mirror">Mirror</string>
+    <string name="cd_lamp">Lamp</string>
+    <string name="cd_no_connection">No connection</string>
+</resources>
