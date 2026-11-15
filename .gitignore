@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+desktop-app/build
+desktop-app/dist
+__pycache__
+app/release

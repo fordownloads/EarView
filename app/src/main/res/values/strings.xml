@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">EarView</string>
+    <string name="app_name">Ear View</string>
 
-    <string name="no_connection_title">Device not connected</string>
-    <string name="no_connection_hint">Power on the camera, then tap "Select device" and pick its Wi-Fi network</string>
+    <string name="no_connection_title">Device is not connected</string>
+    <string name="no_connection_hint">Power on the device and connect its Wi-Fi network</string>
     <string name="connect">Select device</string>
     <string name="retry">Retry</string>
-    <string name="searching">Searching…</string>
+    <string name="searching">Searching...</string>
     <string name="open_wifi_settings">Open Wi-Fi settings</string>
 
     <string name="fps_format">%1$d fps</string>
     <string name="fps_zero">0 fps</string>
-    <string name="model_unknown">—</string>
     <string name="cd_rotate">Rotate</string>
     <string name="cd_mirror">Mirror</string>
     <string name="cd_lamp">Lamp</string>

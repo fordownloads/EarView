@@ -237,7 +237,7 @@ class MainActivity : Activity(), CameraManager.Listener {
             rotateButton.alpha = 0.35f
             mirrorButton.alpha = 0.35f
             lampButton.alpha = 0.35f
-            modelText.text = getString(R.string.model_unknown)
+            modelText.text = ""
             fpsText.text = getString(R.string.fps_zero)
             frames = 0
             updateBattery(-1)
