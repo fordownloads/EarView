@@ -13,7 +13,6 @@ import traceback
 
 from PySide6.QtCore import QObject, Signal, Qt
 
-import wifi_rssi
 from protocol import cmd_packet, jpeg_end, jpeg_frames
 from soulear import (SoulearWorker, probe_soulear, SOULEAR_HOST,
                     local_ipv4_addresses, _log as _slog)
@@ -479,17 +478,6 @@ class DeviceManager(QObject):
         if self.backend == "soulear":
             return "soulear", self.local_ip or probe_soulear(host_s)
         if self.backend == "itimo":
-            return "itimo", self.local_ip or probe_itimo(host_i)
-
-        ssid = None
-        try:
-            _bars, _rssi, _quality, ssid = wifi_rssi.get_signal()
-        except Exception:
-            pass
-        low = (ssid or "").lower()
-        if low.startswith("soulear"):
-            return "soulear", self.local_ip or probe_soulear(host_s)
-        if any(k in low for k in ("itimo", "mz", "endoscope")):
             return "itimo", self.local_ip or probe_itimo(host_i)
 
         if self.host:
